@@ -41,9 +41,42 @@ cd rm01-thor
 
 ## 刷机
 
+### 标准刷机
+
 ```bash
 cd /path/to/Linux_for_Tegra
 sudo ./flash.sh rm01-thor nvme0n1p1
+```
+
+### 直接刷机 (外部存储设备)
+
+```bash
+cd /path/to/Linux_for_Tegra/rm01-thor/scripts
+sudo ./flash.sh --external-device sda nvme0n1p1
+```
+
+## 性能优化
+
+本配置包含优化的烧录脚本，显著提升写入速度：
+
+| 分区 | 原始速度 | 优化后速度 | 提升 |
+|------|---------|-----------|------|
+| APP | ~4.5 MB/s | ~750 MB/s | **~170x** |
+| ESP | ~46 MB/s | ~200 MB/s | **~4x** |
+
+### 优化内容
+
+1. **`read_write_file` 函数**: 优先使用 1MB block size (原 1KB)
+2. **APP 分区写入**: 使用 `bs=1M oflag=direct` (原 `bs=4K oflag=sync`)
+
+### 恢复原始脚本
+
+如需恢复原始烧录脚本：
+
+```bash
+cd /path/to/Linux_for_Tegra/tools/kernel_flash
+cp l4t_flash_from_kernel.sh.orig l4t_flash_from_kernel.sh
+cp images/l4t_flash_from_kernel.sh.orig images/l4t_flash_from_kernel.sh
 ```
 
 ## 目录结构
@@ -59,9 +92,11 @@ rm01-thor/
 ├── bootloader/
 │   └── tegra264-mb2-bct-misc-*.dts   # MB2 BCT (禁用 CVB EEPROM)
 ├── tools/kernel_flash/
-│   └── flash_l4t_t264_nvme_minimal.xml # 分区布局
+│   ├── flash_l4t_t264_nvme_minimal.xml # 分区布局
+│   └── l4t_flash_from_kernel.sh      # 优化的烧录脚本
 └── scripts/
     ├── install.sh                    # 安装脚本 (setup.sh 的替代)
+    ├── flash.sh                      # 直接刷机脚本
     └── build-dtb.sh                  # DTB 编译脚本
 ```
 

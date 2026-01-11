@@ -90,6 +90,22 @@ cp -v "$PROJECT_DIR/dtb/tegra264-rm01-thor.dtb" "$L4T_DIR/kernel/dtb/"
 cp -v "$PROJECT_DIR/bootloader/tegra264-mb2-bct-misc-p3834-0008-rm01.dts" "$L4T_DIR/bootloader/"
 cp -v "$PROJECT_DIR/tools/kernel_flash/flash_l4t_t264_nvme_minimal.xml" "$L4T_DIR/tools/kernel_flash/"
 
+# 安装优化的烧录脚本 (提升写入速度 ~170x)
+if [ -f "$PROJECT_DIR/tools/kernel_flash/l4t_flash_from_kernel.sh" ]; then
+    print_info "Installing optimized flash scripts..."
+    # 备份原始脚本
+    if [ -f "$L4T_DIR/tools/kernel_flash/l4t_flash_from_kernel.sh" ] && \
+       [ ! -f "$L4T_DIR/tools/kernel_flash/l4t_flash_from_kernel.sh.orig" ]; then
+        cp "$L4T_DIR/tools/kernel_flash/l4t_flash_from_kernel.sh" \
+           "$L4T_DIR/tools/kernel_flash/l4t_flash_from_kernel.sh.orig"
+    fi
+    cp -v "$PROJECT_DIR/tools/kernel_flash/l4t_flash_from_kernel.sh" "$L4T_DIR/tools/kernel_flash/"
+    # 同步到 images 目录
+    if [ -d "$L4T_DIR/tools/kernel_flash/images" ]; then
+        cp -v "$PROJECT_DIR/tools/kernel_flash/l4t_flash_from_kernel.sh" "$L4T_DIR/tools/kernel_flash/images/"
+    fi
+fi
+
 # 可选：安装 DTS 源文件
 if [ -d "$L4T_DIR/source/hardware/nvidia/t264/nv-public/nv-platform" ] && [ -f "$PROJECT_DIR/dts/tegra264-rm01-thor.dts" ]; then
     print_info "Installing DTS source..."
