@@ -51,7 +51,7 @@ sudo ./flash.sh rm01-thor nvme0n1p1
 ```
 rm01-thor/
 ├── rm01-thor.conf                    # 刷机配置
-├── setup.sh                          # 一键安装脚本
+├── setup.sh                          # 一键安装脚本 (推荐)
 ├── dts/
 │   └── tegra264-rm01-thor.dts        # 设备树源文件
 ├── dtb/
@@ -61,7 +61,7 @@ rm01-thor/
 ├── tools/kernel_flash/
 │   └── flash_l4t_t264_nvme_minimal.xml # 分区布局
 └── scripts/
-    ├── install.sh                    # 安装脚本
+    ├── install.sh                    # 安装脚本 (setup.sh 的替代)
     └── build-dtb.sh                  # DTB 编译脚本
 ```
 
