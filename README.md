@@ -41,18 +41,15 @@ cd rm01-thor
 
 ## 刷机
 
-### 标准刷机
+使用 initrd flash 直接刷机到外部存储设备：
 
 ```bash
 cd /path/to/Linux_for_Tegra
-sudo ./flash.sh rm01-thor nvme0n1p1
-```
-
-### 直接刷机 (外部存储设备)
-
-```bash
-cd /path/to/Linux_for_Tegra/rm01-thor/scripts
-sudo ./flash.sh --external-device sda nvme0n1p1
+sudo ./tools/kernel_flash/l4t_initrd_flash.sh \
+    --external-device sda \
+    -c tools/kernel_flash/flash_l4t_t264_nvme_minimal.xml \
+    --direct sda \
+    rm01-thor nvme0n1p1
 ```
 
 ## 性能优化
@@ -96,7 +93,6 @@ rm01-thor/
 │   └── l4t_flash_from_kernel.sh      # 优化的烧录脚本
 └── scripts/
     ├── install.sh                    # 安装脚本 (setup.sh 的替代)
-    ├── flash.sh                      # 直接刷机脚本
     └── build-dtb.sh                  # DTB 编译脚本
 ```
 
