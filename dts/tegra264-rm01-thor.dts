@@ -1,0 +1,460 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: Copyright (c) 2026, Your Company. All rights reserved.
+/*
+ * Device tree for RM01-Thor custom carrier board V1.0 CVB
+ *
+ * Hardware configuration:
+ *   - SoM: P3834-0008 (128GB, same as Thor devkit)
+ *   - Storage: NVMe SSD (PCIe C5)
+ *   - Network: PCIe NIC (PCIe C2)
+ *   - Debug: UART
+ *   - Connectivity: USB 2.0/3.0
+ *
+ * Disabled (not present on RM01):
+ *   - Audio subsystem (no codec, no speakers)
+ *   - Display (headless server)
+ *   - CAN controllers (no CAN bus)
+ *   - 10GbE MGBE (using PCIe NIC instead)
+ *   - CVB EEPROM (no carrier board EEPROM)
+ */
+/dts-v1/;
+
+#include "tegra264-p3834-0008.dtsi"
+
+/ {
+	model = "RM01-Thor V1.0 CVB";
+	compatible = "rm01,rm01-thor", "nvidia,p3834-0008", "nvidia,tegra264";
+
+	bus@0 {
+		/*
+		 * ============================================
+		 * DISABLED: CAN Controllers (not connected)
+		 * These cause FSI fabric timeout errors
+		 * ============================================
+		 */
+		mttcan@81102f0000 {
+			status = "disabled";
+		};
+
+		mttcan@8110300000 {
+			status = "disabled";
+		};
+
+		mttcan@8110330000 {
+			status = "disabled";
+		};
+
+		mttcan@8110340000 {
+			status = "disabled";
+		};
+
+		/*
+		 * ============================================
+		 * DISABLED: Audio Subsystem (headless server)
+		 * No audio hardware, causes deferred probe
+		 * ============================================
+		 */
+		aconnect@9000000 {
+			status = "disabled";
+
+			adsp@9080000 {
+				status = "disabled";
+			};
+
+			adsp1@9180000 {
+				status = "disabled";
+			};
+
+			dma-controller@9440000 {
+				status = "disabled";
+			};
+
+			ahub@9630000 {
+				status = "disabled";
+			};
+
+			interrupt-controller@9960000 {
+				status = "disabled";
+			};
+		};
+
+		/* HDA audio - disabled */
+		hda@88090b0000 {
+			status = "disabled";
+		};
+
+		/*
+		 * ============================================
+		 * DISABLED: 10GbE MGBE (using PCIe NIC)
+		 * ============================================
+		 */
+		ethernet@a808a10000 {
+			status = "disabled";
+		};
+
+		ethernet@a808b10000 {
+			status = "disabled";
+		};
+
+		ethernet@a808d10000 {
+			status = "disabled";
+		};
+
+		ethernet@a808e10000 {
+			status = "disabled";
+		};
+
+		/*
+		 * ============================================
+		 * PCIe Controllers
+		 * NOTE: Only enable controllers with connected devices.
+		 * Unlike CAN, PCIe "Link DOWN" is safe, but enabling
+		 * unused controllers may cause issues during early boot.
+		 * ============================================
+		 */
+
+		/* PCIe C1 - Network card slot */
+		pcie@a808400000 {
+			status = "okay";
+		};
+
+		/* PCIe C2 - Available expansion */
+		pcie@a808420000 {
+			status = "disabled";
+		};
+
+		/* PCIe C3 - disabled */
+		pcie@a808440000 {
+			status = "disabled";
+		};
+
+		/* PCIe C4 - disabled */
+		pcie@a808460000 {
+			status = "disabled";
+		};
+
+		/* PCIe C5 - NVMe root device */
+		pcie@a808480000 {
+			status = "okay";
+		};
+
+		/*
+		 * ============================================
+		 * ENABLED: USB Controllers
+		 * ============================================
+		 */
+		padctl@a808680000 {
+			status = "okay";
+			pads {
+				usb2 {
+					lanes {
+						usb2-0 {
+							status = "okay";
+						};
+						usb2-1 {
+							status = "okay";
+						};
+						usb2-2 {
+							status = "okay";
+						};
+						usb2-3 {
+							status = "okay";
+						};
+					};
+				};
+				usb3 {
+					lanes {
+						usb3-0 {
+							status = "okay";
+						};
+						usb3-1 {
+							status = "okay";
+						};
+						usb3-2 {
+							status = "okay";
+						};
+					};
+				};
+			};
+
+			ports {
+				usb2-0 {
+					mode = "otg";
+					usb-role-switch;
+					role-switch-default-mode = "peripheral";
+					status = "okay";
+				};
+				usb2-1 {
+					mode = "host";
+					status = "okay";
+				};
+				usb2-2 {
+					mode = "host";
+					status = "okay";
+				};
+				usb2-3 {
+					mode = "host";
+					status = "okay";
+				};
+				usb3-0 {
+					nvidia,usb2-companion = <1>;
+					status = "okay";
+				};
+				usb3-1 {
+					nvidia,usb2-companion = <0>;
+					status = "okay";
+				};
+				usb3-2 {
+					nvidia,usb2-companion = <3>;
+					status = "okay";
+				};
+			};
+		};
+
+		/* USB device mode controller */
+		usb@a808670000 {
+			phys = <&{/bus@0/padctl@a808680000/pads/usb2/lanes/usb2-0}>,
+				<&{/bus@0/padctl@a808680000/pads/usb3/lanes/usb3-1}>;
+			phy-names = "usb2-0", "usb3-1";
+			status = "okay";
+		};
+
+		/* USB host mode controller (xHCI) */
+		usb@a80aa10000 {
+			phys = <&{/bus@0/padctl@a808680000/pads/usb2/lanes/usb2-0}>,
+				<&{/bus@0/padctl@a808680000/pads/usb2/lanes/usb2-1}>,
+				<&{/bus@0/padctl@a808680000/pads/usb2/lanes/usb2-2}>,
+				<&{/bus@0/padctl@a808680000/pads/usb2/lanes/usb2-3}>,
+				<&{/bus@0/padctl@a808680000/pads/usb3/lanes/usb3-0}>,
+				<&{/bus@0/padctl@a808680000/pads/usb3/lanes/usb3-1}>,
+				<&{/bus@0/padctl@a808680000/pads/usb3/lanes/usb3-2}>;
+			phy-names = "usb2-0", "usb2-1", "usb2-2", "usb2-3", "usb3-0", "usb3-1", "usb3-2";
+			status = "okay";
+		};
+
+		/*
+		 * ============================================
+		 * ENABLED: UARTs for debug console
+		 * ============================================
+		 */
+		serial@810c510000 {
+			status = "okay";
+		};
+
+		serial@810c530000 {
+			status = "okay";
+		};
+
+		serial@810c540000 {
+			status = "okay";
+		};
+
+		/*
+		 * ============================================
+		 * DISABLED: Display/DCE (headless)
+		 * ============================================
+		 */
+		/* Vision/Camera - disabled if not used */
+		host1x@8181200000 {
+			vi0@8188400000 {
+				status = "disabled";
+			};
+
+			vi0-thi@8188700000 {
+				status = "disabled";
+			};
+
+			vi1@8188c00000 {
+				status = "disabled";
+			};
+
+			vi1-thi@8188f00000 {
+				status = "disabled";
+			};
+
+			isp@8188800000 {
+				status = "disabled";
+			};
+
+			isp-thi@8188b00000 {
+				status = "disabled";
+			};
+
+			isp1@818a800000 {
+				status = "disabled";
+			};
+
+			isp1-thi@818ab00000 {
+				status = "disabled";
+			};
+
+			nvcsi@8188000000 {
+				status = "disabled";
+			};
+		};
+
+		/*
+		 * ============================================
+		 * DISABLED: I2C devices not present on RM01
+		 * ============================================
+		 */
+		/* CVB EEPROM - not present */
+		i2c@810c640000 {
+			/* Keep I2C bus enabled but no CVB EEPROM device */
+		};
+
+		/* I2C bus with INA238 - disable the sensor */
+		i2c@c600000 {
+			ina238@44 {
+				status = "disabled";
+			};
+		};
+
+		/* Audio codec I2C - disabled */
+		i2c@810c680000 {
+			status = "disabled";
+		};
+
+		/*
+		 * ============================================
+		 * ENABLED: PWM for Fan Control
+		 * ============================================
+		 */
+		/* PWM4 - SoC Fan control */
+		pwm@c6a0000 {
+			status = "okay";
+		};
+
+		/*
+		 * ============================================
+		 * DISABLED: AON Cluster (Always-On Processor)
+		 * Headless server doesn't need sensor processing
+		 * Disabling eliminates "INFO: END TASK:MB" messages
+		 * ============================================
+		 */
+		aocluster@c000000 {
+			status = "disabled";
+
+			aon@c040000 {
+				status = "disabled";
+			};
+		};
+	};
+
+	/*
+	 * ============================================
+	 * ENABLED: DCE (Display Control Engine)
+	 * Required for GPU driver IPC communication
+	 * ============================================
+	 */
+	dce@8808000000 {
+		status = "okay";
+	};
+
+	/*
+	 * ============================================
+	 * DISABLED: Display Controller (headless server)
+	 * No display output, causes IOVA/NvKmsKapiDevice errors
+	 * DCE is kept enabled for GPU IPC
+	 * ============================================
+	 */
+	display@8808c00000 {
+		status = "disabled";
+	};
+
+	/*
+	 * ============================================
+	 * DISABLED: Sound card (no audio hardware)
+	 * ============================================
+	 */
+	sound {
+		status = "disabled";
+	};
+
+	/*
+	 * ============================================
+	 * Power Management - keep minimal
+	 * ============================================
+	 */
+	/* PWM fan - adjust based on your cooling solution */
+	soc_fan: pwm-fan {
+		compatible = "pwm-fan";
+		pwms = <&pwm4 0 40000>;
+		#cooling-cells = <2>;
+		cooling-levels = <77 102 140 192 255>;
+	};
+
+	thermal-shutdown-alert {
+		status = "disabled";
+	};
+
+	/* Basic thermal management */
+	thermal-zones {
+		tj-thermal {
+			trips {
+				tj_trip_active0: active-0 {
+					temperature = <80000>;
+					hysteresis = <0>;
+					type = "active";
+				};
+
+				tj_trip_active1: active-1 {
+					temperature = <86000>;
+					hysteresis = <0>;
+					type = "active";
+				};
+
+				tj_trip_active2: active-2 {
+					temperature = <91000>;
+					hysteresis = <0>;
+					type = "active";
+				};
+
+				tj_trip_active3: active-3 {
+					temperature = <100000>;
+					hysteresis = <0>;
+					type = "active";
+				};
+			};
+
+			cooling-maps {
+				active-0 {
+					trip = <&tj_trip_active0>;
+					cooling-device = <&soc_fan 0 1>;
+				};
+
+				active-1 {
+					trip = <&tj_trip_active1>;
+					cooling-device = <&soc_fan 1 2>;
+				};
+
+				active-2 {
+					trip = <&tj_trip_active2>;
+					cooling-device = <&soc_fan 2 3>;
+				};
+
+				active-3 {
+					trip = <&tj_trip_active3>;
+					cooling-device = <&soc_fan 3 4>;
+				};
+			};
+		};
+	};
+
+	/*
+	 * ============================================
+	 * EEPROM Manager - CVM only, no CVB
+	 * ============================================
+	 */
+	eeprom-manager {
+		data-size = <0x100>;
+		bus@0 {
+			i2c-bus = <&i2c1>;
+			eeprom@0 {
+				slave-address = <0x50>;
+				label = "cvm";
+			};
+		};
+		/* CVB EEPROM entry removed - not present on RM01 */
+	};
+};

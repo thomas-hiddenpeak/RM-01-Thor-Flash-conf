@@ -1,0 +1,35 @@
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026, Your Company. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * tegra264-mb2-bct-misc-p3834-0008-rm01.dts
+ * MB2 BCT misc configuration for RM01-Thor carrier board
+ * 
+ * Key change: Disable CVB EEPROM read (RM01 has no carrier board EEPROM)
+ */
+
+/dts-v1/;
+
+#ifdef AUTO_BUILD
+#include "tegrabl_carveout_id.h"
+#else
+#include "t264_tegrabl_carveout_id.h"
+#endif
+
+#include "tegra264-mb2-bct-common.dtsi"
+/ {
+    mb2-misc {
+        eeprom {
+            /* CVM (module) EEPROM - keep enabled */
+            cvm_eeprom_i2c_instance = <1>;
+            cvm_eeprom_i2c_slave_address = <0xa0>;
+            cvm_eeprom_read_size = <0x100>;
+            
+            /* CVB (carrier board) EEPROM - DISABLED for RM01-Thor */
+            /* RM01-Thor does not have carrier board EEPROM */
+            cvb_eeprom_i2c_instance = <1>;
+            cvb_eeprom_i2c_slave_address = <0xac>;
+            cvb_eeprom_read_size = <0x0>;  /* Set to 0 to skip CVB EEPROM read */
+        };
+    };
+};
